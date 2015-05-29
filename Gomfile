@@ -1,0 +1,3 @@
+autodetect
+
+gom 'github.com/gorilla/mux'
