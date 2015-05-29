@@ -4,8 +4,8 @@ import "fmt"
 import "os"
 import "github.com/gorilla/mux"
 import "net/http"
-
-/* import "net/url" */
+import "io/ioutil"
+import "net/url"
 
 func main() {
 	r := mux.NewRouter()
@@ -17,6 +17,8 @@ func main() {
 
 func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
 	if authorized_request(req.Header["X-Triscuits-Auth"][0]) {
+		req.ParseForm()
+
 		ticket := generate_ticket("asdf")
 		fmt.Fprint(w, ticket)
 	} else {
@@ -30,6 +32,8 @@ func authorized_request(auth_header string) bool {
 }
 
 func generate_ticket(user string) string {
-	/* resp, err := http.PostForm("https://localhost/trusted", url.Values{"username": user}) */
-	return "waldo"
+	resp, _ := http.PostForm(os.Getenv("TABLEAU_URL"), url.Values{"username": {user}})
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
 }
