@@ -19,7 +19,7 @@ func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
 	if authorized_request(req.Header["X-Triscuits-Auth"][0]) {
 		req.ParseForm()
 
-		ticket := generate_ticket("asdf")
+		ticket := generate_ticket(req.Form["username"][0])
 		fmt.Fprint(w, ticket)
 	} else {
 		http.Error(w, "nope", http.StatusUnauthorized)
