@@ -16,7 +16,7 @@ func main() {
 }
 
 func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
-	if authorized_request(req.Header["X-Triscuits-Auth"][0]) {
+	if authorized_request(req.Header["X-Triscuits-Auth"]) {
 		req.ParseForm()
 
 		ticket := generate_ticket(req.Form["username"][0])
@@ -26,7 +26,12 @@ func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func authorized_request(auth_header string) bool {
+func authorized_request(headers []string) bool {
+	if len(headers) == 0 {
+		return false
+	}
+
+	auth_header := headers[0]
 	expected_hmac := os.Getenv("TRISCUITS_HMAC")
 	return expected_hmac == auth_header
 }
