@@ -19,8 +19,12 @@ func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
 	if authorized_request(req.Header["X-Triscuits-Auth"]) {
 		req.ParseForm()
 
-		ticket := generate_ticket(req.Form["username"][0])
-		fmt.Fprint(w, ticket)
+		if len(req.Form["username"]) == 1 {
+			ticket := generate_ticket(req.Form["username"][0])
+			fmt.Fprint(w, ticket)
+		} else {
+			http.Error(w, "missing parameter 'username'", http.StatusBadRequest)
+		}
 	} else {
 		http.Error(w, "nope", http.StatusUnauthorized)
 	}
