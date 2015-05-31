@@ -12,7 +12,7 @@ func main() {
 	r.HandleFunc("/trusted", TicketRequestHandler)
 	fmt.Println("listening on 31337. bring it!")
 	http.Handle("/", r)
-	http.ListenAndServe(":31337", nil)
+	http.ListenAndServe("0.0.0.0:31337", nil)
 }
 
 func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
