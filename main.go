@@ -8,11 +8,15 @@ import "io/ioutil"
 import "net/url"
 
 func main() {
+	fmt.Println("listening on 31337. bring it!")
+	http.Handle("/", triscuits())
+	http.ListenAndServe("0.0.0.0:31337", nil)
+}
+
+func triscuits() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/trusted", TicketRequestHandler)
-	fmt.Println("listening on 31337. bring it!")
-	http.Handle("/", r)
-	http.ListenAndServe("0.0.0.0:31337", nil)
+	return r
 }
 
 func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
