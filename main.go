@@ -7,11 +7,9 @@ import "errors"
 import "net/http"
 import "io/ioutil"
 import "net/url"
-
-var hmac_key []byte
+import "github.com/orenmazor/hmaclib"
 
 func main() {
-	hmac_key = []byte(os.Getenv("TRISCUITS_HMAC"))
 	fmt.Println("listening on 31337. bring it!")
 	http.Handle("/", triscuits())
 	http.ListenAndServe("0.0.0.0:31337", nil)
@@ -54,7 +52,7 @@ func authorized_request(username string, headers []string) bool {
 	}
 
 	auth_header := headers[0]
-	return CheckHMAC(username, auth_header)
+	return hmaclib.CheckHMAC([]byte(username), auth_header, []byte(os.Getenv("TRISCUITS_HMAC")))
 }
 
 func generate_ticket(user string) string {

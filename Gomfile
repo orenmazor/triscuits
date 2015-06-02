@@ -1,3 +1,4 @@
 autodetect
 
 gom 'github.com/gorilla/mux'
+gom 'github.com/orenmazor/hmaclib'
