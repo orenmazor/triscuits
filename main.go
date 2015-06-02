@@ -1,13 +1,17 @@
 package main
 
-import "fmt"
 import "os"
+import "fmt"
 import "github.com/gorilla/mux"
+import "errors"
 import "net/http"
 import "io/ioutil"
 import "net/url"
 
+var hmac_key []byte
+
 func main() {
+	hmac_key = []byte(os.Getenv("TRISCUITS_HMAC"))
 	fmt.Println("listening on 31337. bring it!")
 	http.Handle("/", triscuits())
 	http.ListenAndServe("0.0.0.0:31337", nil)
@@ -19,29 +23,38 @@ func triscuits() *mux.Router {
 	return r
 }
 
-func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
-	if authorized_request(req.Header["X-Triscuits-Auth"]) {
-		req.ParseForm()
+func getUsername(req *http.Request) (string, error) {
+	req.ParseForm()
 
-		if len(req.Form["username"]) == 1 {
-			ticket := generate_ticket(req.Form["username"][0])
-			fmt.Fprint(w, ticket)
-		} else {
-			http.Error(w, "missing parameter 'username'", http.StatusBadRequest)
-		}
+	if len(req.Form["username"]) == 1 {
+		return req.Form["username"][0], nil
+	} else {
+		return "", errors.New("missing parameter 'username'")
+	}
+}
+
+func TicketRequestHandler(w http.ResponseWriter, req *http.Request) {
+	username, err := getUsername(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if authorized_request(username, req.Header["X-Triscuits-Auth"]) {
+		ticket := generate_ticket(username)
+		fmt.Fprint(w, ticket)
 	} else {
 		http.Error(w, "nope", http.StatusUnauthorized)
 	}
 }
 
-func authorized_request(headers []string) bool {
+func authorized_request(username string, headers []string) bool {
 	if len(headers) == 0 {
 		return false
 	}
 
 	auth_header := headers[0]
-	expected_hmac := os.Getenv("TRISCUITS_HMAC")
-	return expected_hmac == auth_header
+	return CheckHMAC(username, auth_header)
 }
 
 func generate_ticket(user string) string {
